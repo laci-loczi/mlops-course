@@ -22,10 +22,10 @@ same seed, identical metrics, both queryable by anyone with the tracking URI.
 
 This lab follows official tutorials with minimal changes — keep them open as references:
 
-- **MLflow remote tracking server:** https://mlflow.org/docs/latest/ml/tracking/tutorials/remote-server/
-- **MLflow tracking server architecture:** https://mlflow.org/docs/latest/self-hosting/architecture/tracking-server/
-- **MinIO container:** https://min.io/docs/minio/container/index.html
-- **Docker Compose:** https://docs.docker.com/compose/
+- **MLflow remote tracking server:** [https://mlflow.org/docs/latest/ml/tracking/tutorials/remote-server/](https://mlflow.org/docs/latest/ml/tracking/tutorials/remote-server/)
+- **MLflow tracking server architecture:** [https://mlflow.org/docs/latest/self-hosting/architecture/tracking-server/](https://mlflow.org/docs/latest/self-hosting/architecture/tracking-server/)
+- **MinIO container:** [https://min.io/docs/minio/container/index.html](https://min.io/docs/minio/container/index.html)
+- **Docker Compose:** [https://docs.docker.com/compose/](https://docs.docker.com/compose/)
 
 **Required deviation from the official tutorial:** The official MLflow tutorial (Step 3) runs
 `mlflow server` on the host. This lab containerizes it as a fourth compose service so the entire
@@ -36,7 +36,7 @@ environment, no manual credential export.
 
 - Docker Desktop (macOS/Windows) or Docker Engine + Compose plugin (Linux) — version 24+
 - At least 16 GB RAM (all four containers fit easily, but leave headroom)
-- `uv` — https://docs.astral.sh/uv/getting-started/installation/
+- `uv` — [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
 - Ports **5500, 5510, 5511, 5532** free on your host (host-mapped 55xx block; see `.env.example`)
 
 ---
@@ -83,6 +83,7 @@ alongside your solution.
 Open `compose.yaml` and find the `minio` and `minio-create-bucket` service blocks marked `TODO(student)`.
 
 Fill in:
+
 - `minio`: the image (`minio/minio:RELEASE.2024-06-13T22-53-53Z`), command, environment variables, volume mount, and healthcheck
 - `minio-create-bucket`: the image (`minio/mc:RELEASE.2025-08-13T08-35-41Z`), and the entrypoint that creates the bucket
 
@@ -93,7 +94,7 @@ docker compose up -d minio minio-create-bucket
 docker compose ps  # both should show "healthy" / "exited 0"
 ```
 
-Open **http://localhost:5511** and log in with `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` from your `.env`.
+Open **[http://localhost:5511](http://localhost:5511)** and log in with `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` from your `.env`.
 
 Confirm: the bucket named `mlflow-artifacts` exists.
 
@@ -105,7 +106,7 @@ Open `compose.yaml` and find the `mlflow` service block. Fill in the `TODO(stude
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` — MinIO root credentials
 - `--backend-store-uri` — the Postgres connection string using the compose DNS name `postgres`
 - `--artifacts-destination` — the MinIO bucket (`s3://mlflow-artifacts`)
-- `--allowed-hosts` — required by MLflow 3.5.0+ security middleware. Note: the host check does **not** strip the port, so include the `host:port` form (e.g. the `localhost:*,127.0.0.1:*` wildcards) or the browser will get an "Invalid Host header" error at `localhost:5500`
+- `--allowed-hosts` — required by MLflow 3.5.0+ security middleware. Note: the host check does **not** strip the port, so include the `host:port` form (e.g. the `localhost:*,127.0.0.1:`* wildcards) or the browser will get an "Invalid Host header" error at `localhost:5500`
 
 Bring up the full stack:
 
@@ -115,7 +116,7 @@ docker compose up -d --wait
 
 The `--wait` flag blocks until all service healthchecks pass. This takes about 20-30 seconds on first run (image pulls).
 
-Open **http://localhost:5500** — you should see the MLflow UI with no experiments yet.
+Open **[http://localhost:5500](http://localhost:5500)** — you should see the MLflow UI with no experiments yet.
 
 **Key concept:** Notice that `--backend-store-uri` points to `postgres` (a hostname), not `localhost`. Inside the compose network, service names are DNS names. The MLflow server and Postgres talk to each other inside the network; the host port `5432` is mapped for your inspection.
 
@@ -135,7 +136,8 @@ Run the pipeline:
 uv run python src/main.py
 ```
 
-Open the MLflow UI at **http://localhost:5500**, click into the `diabetes-week2` experiment, and confirm:
+Open the MLflow UI at **[http://localhost:5500](http://localhost:5500)**, click into the `diabetes-week2` experiment, and confirm:
+
 - The run appears with params (`random_seed=42`, `test_size=0.25`, `max_iter=1000`)
 - Metrics are recorded (`accuracy`, `precision`, `recall`, `f1`)
 - An artifact named `model` is listed under the run
@@ -146,7 +148,7 @@ Confirm **where each piece lives**.
 
 **MinIO (artifacts):**
 
-Open **http://localhost:5511**, navigate to the `mlflow-artifacts` bucket, and browse to the model artifact directory. You should find `model.pkl` (or `model/` directory with `model.pkl` and `MLmodel` inside).
+Open **[http://localhost:5511](http://localhost:5511)**, navigate to the `mlflow-artifacts` bucket, and browse to the model artifact directory. You should find `model.pkl` (or `model/` directory with `model.pkl` and `MLmodel` inside).
 
 **Postgres (metadata):**
 
@@ -198,11 +200,13 @@ git commit -m "week02: local services stack and written answers"
 
 ## Service UIs
 
-| Service | URL | Credentials |
-| --- | --- | --- |
-| MLflow UI | http://localhost:5500 | — |
-| MinIO console | http://localhost:5511 | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` from `.env` |
-| Postgres | `localhost:5532` | Connect with `psql` or a DB client |
+
+| Service       | URL                                            | Credentials                                           |
+| ------------- | ---------------------------------------------- | ----------------------------------------------------- |
+| MLflow UI     | [http://localhost:5500](http://localhost:5500) | —                                                     |
+| MinIO console | [http://localhost:5511](http://localhost:5511) | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` from `.env` |
+| Postgres      | `localhost:5532`                               | Connect with `psql` or a DB client                    |
+
 
 > Host ports are remapped into the 55xx block to avoid clashes with macOS AirPlay (5000) and a local Postgres (5432). See `.env.example` for the full scheme.
 
@@ -256,12 +260,15 @@ starter/
 
 ## Troubleshooting
 
-| Problem | Fix |
-| --- | --- |
-| Port already in use | `docker compose down` any previous stacks; or change port in `.env` |
+
+| Problem                                  | Fix                                                                                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Port already in use                      | `docker compose down` any previous stacks; or change port in `.env`                                                            |
 | `docker compose up --wait` never returns | `docker compose logs mlflow` — if you see a connection refused error, check the `--backend-store-uri` syntax in `compose.yaml` |
-| MinIO console shows no bucket | The `minio-create-bucket` job may have failed; check `docker compose logs minio-create-bucket` |
-| MLflow UI shows "No experiments" | The pipeline hasn't run yet, or `MLFLOW_TRACKING_URI` in `.env` points to the wrong address |
-| `uv run pytest` import error | Run from inside `starter/`, not from the repo root |
-| `docker compose down -v` wipes my runs | That is correct — volumes hold all state. Use `down` (without `-v`) to keep data |
-| MLflow server refused connection | MLflow 3.5.0+ requires `--allowed-hosts`; check the `mlflow` service command in `compose.yaml` |
+| MinIO console shows no bucket            | The `minio-create-bucket` job may have failed; check `docker compose logs minio-create-bucket`                                 |
+| MLflow UI shows "No experiments"         | The pipeline hasn't run yet, or `MLFLOW_TRACKING_URI` in `.env` points to the wrong address                                    |
+| `uv run pytest` import error             | Run from inside `starter/`, not from the repo root                                                                             |
+| `docker compose down -v` wipes my runs   | That is correct — volumes hold all state. Use `down` (without `-v`) to keep data                                               |
+| MLflow server refused connection         | MLflow 3.5.0+ requires `--allowed-hosts`; check the `mlflow` service command in `compose.yaml`                                 |
+
+
