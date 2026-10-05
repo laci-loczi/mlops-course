@@ -219,7 +219,7 @@ COMMANDS = {
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="week-04-dvc-introduction",
-        description="Week 4 lab — DVC data versioning with MinIO.",
+        description="Week 4 lab — DVC data versioning with Silo.",
     )
     parser.add_argument("command", choices=sorted(COMMANDS))
     args = parser.parse_args()

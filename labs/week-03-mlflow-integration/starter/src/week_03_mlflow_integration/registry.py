@@ -124,6 +124,13 @@ def roll_back(
     return (current_version, client.get_model_version_by_alias(name, settings.model_alias))
 
 def load_aliased_model(settings: Settings):
+    """Load the model the alias currently points at.
+
+    Two things worth noticing. First, the URI names a ROLE, not a version — the
+    caller never changes when the champion changes. Second, this download goes
+    through the tracking server's artifact proxy, so the client needs no Silo
+    credentials at all. Check your `.env`: there are no AWS_* variables in it.
+    """
     mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
     return mlflow.sklearn.load_model(
         f"models:/{settings.registered_model_name}@{settings.model_alias}"

@@ -1,7 +1,7 @@
 [project]
 name = "week-04-dvc-introduction"
 version = "0.1.0"
-description = "Week 4 guided lab — DVC data versioning with MinIO as the S3 remote"
+description = "Week 4 guided lab — DVC data versioning with Silo as the S3 remote"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -19,7 +19,7 @@ dependencies = [
     # mlflow.Dockerfile, and mlflow 3.15.0 changed the default
     # `serialization_format` of log_model from cloudpickle to skops — which
     # silently renames the logged artifact from model.pkl to model.skops and
-    # invalidates every MinIO path documented in Weeks 2-4. Client and server
+    # invalidates every Silo path documented in Weeks 2-4. Client and server
     # move together, deliberately.
     "mlflow==3.13.0",
     # DVC with the S3 remote extra (resolves dvc-s3>=3.2.1,<4).
@@ -34,7 +34,7 @@ dependencies = [
 #
 # Weeks 2-3 listed `boto3>=1.38.0` here, but nothing on the client side ever
 # imported it: the MLflow client talks only to the tracking server, which
-# proxies artifacts to MinIO on its behalf. boto3 is also not a hard MLflow
+# proxies artifacts to Silo on its behalf. boto3 is also not a hard MLflow
 # dependency (it appears only under mlflow's extras/databricks/gateway/genai).
 #
 # It is worth removing rather than merely unnecessary. `dvc[s3]` reaches S3 via

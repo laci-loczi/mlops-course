@@ -30,7 +30,6 @@ def main() -> None:
     print()
 
     with mlflow.start_run():
-        
         mlflow.log_param("random_seed", settings.random_seed)
         mlflow.log_param("test_size", settings.test_size)
         mlflow.log_param("max_iter", settings.max_iter)

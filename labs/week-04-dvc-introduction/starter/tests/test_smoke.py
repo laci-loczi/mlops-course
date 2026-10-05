@@ -3,7 +3,7 @@
 These tests operate on `data/diabetes.csv`, NOT on the DVC-tracked dataset, and
 they are unchanged in substance from Week 3. Their job is to prove that adding
 data versioning did not disturb the baseline the course has been quoting since
-Week 1. Nothing here needs Docker, MinIO or DVC.
+Week 1. Nothing here needs Docker, Silo or DVC.
 """
 
 import pytest

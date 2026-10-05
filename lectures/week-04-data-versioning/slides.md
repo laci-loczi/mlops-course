@@ -3,7 +3,7 @@ theme: default
 title: Week 4 — Data Versioning
 info: |
   Lecture for the course "Lifecycle of Artificial Intelligence Systems".
-  Covers content-addressed data versioning with DVC, MinIO as an S3-compatible
+  Covers content-addressed data versioning with DVC, Silo as an S3-compatible
   remote, dvc.yaml pipeline stages and dvc.lock, and linking a data version to an
   MLflow run so the traceability chain reaches the bytes.
 class: text-left
@@ -592,7 +592,7 @@ Ask: does your own project need DVC?
 - **Git** keeps a small file that names the data (the hash).
 - **An object store** keeps the data itself, under that hash.
 
-You already run an object store: **MinIO**, since Week 2.
+You already run an object store: **Silo**, since Week 2.
 
 <!--
 Focus: the same split as Week 2, now for data.
@@ -638,7 +638,7 @@ Sources: DVC[^1][] · lakeFS[^2][] · Git LFS[^3][] · Delta Lake[^4][] · Dolt[
 </v-click>
 <v-click>
 
-**Why DVC here:** open source, works next to Git, and stores data in any S3-compatible bucket, like our MinIO.
+**Why DVC here:** open source, works next to Git, and stores data in any S3-compatible bucket, like our Silo.
 
 </v-click>
 
@@ -664,7 +664,7 @@ In November 2025 lakeFS bought DVC from Iterative.ai. DVC stays open source unde
 <div class="cards" style="grid-template-columns:repeat(4,1fr)">
   <div v-click class="card"><carbon-logo-git class="ic" style="color:#f05032" /><b>Works with Git</b>Git keeps the history</div>
   <div v-click class="card"><ph-hash class="ic" /><b>Tracks files by hash</b>the content hash is the name</div>
-  <div v-click class="card"><ph-cloud-arrow-up class="ic" /><b>Stores the bytes in a remote</b>for us: a MinIO bucket</div>
+  <div v-click class="card"><ph-cloud-arrow-up class="ic" /><b>Stores the bytes in a remote</b>for us: a Silo bucket</div>
   <div v-click class="card"><carbon-flow class="ic" /><b>Runs pipelines</b>re-runs only what changed</div>
 </div>
 
@@ -683,7 +683,7 @@ Focus: DVC has no history of its own. The history is Git's.
 <carbon-terminal class="icon-corner" />
 
 ```bash {1|2|3|all}
-uv add "dvc[s3]"                  # the [s3] extra adds S3 and MinIO support
+uv add "dvc[s3]"                  # the [s3] extra adds S3 and S3-compatible stores
 dvc init                          # run it inside a Git repository
 git commit -m "Initialise DVC"
 ```
@@ -745,7 +745,7 @@ Focus: four fields, about a hundred bytes. Students will read this file on their
     <div class="text-sm text-right pr-20 opacity-80">↕ the md5 is the address</div>
     <div class="flow" style="margin:0">
       <div class="arrow-l">dvc push<span class="arrow">⇄</span>dvc pull</div>
-      <div class="node" style="width:16rem"><img class="logo" src="/minio-logo.png" alt="MinIO" /><b>MinIO: dvc-storage</b><br><span class="mono">files/md5/78/6c54f2…<br>(the 19,034 bytes)</span></div>
+      <div class="node" style="width:16rem"><ph-hard-drives class="ic" /><b>Silo: dvc-storage</b><br><span class="mono">files/md5/78/6c54f2…<br>(the 19,034 bytes)</span></div>
     </div>
   </div>
 </div>
@@ -768,7 +768,7 @@ Focus: Git and DVC never manage the same bytes.
   <div class="arrow-l dim">dvc add<span class="arrow">→</span></div>
   <div class="node" style="width:12rem"><ph-archive class="ic" /><b>Local cache</b><br><span class="mono">.dvc/cache</span></div>
   <div class="arrow-l on">dvc push<span class="arrow">→</span></div>
-  <div class="node" style="width:12rem"><img class="logo" src="/minio-logo.png" alt="MinIO" /><b>Remote</b><br><span class="mono">MinIO: dvc-storage</span></div>
+  <div class="node" style="width:12rem"><ph-hard-drives class="ic" /><b>Remote</b><br><span class="mono">Silo: dvc-storage</span></div>
 </div>
 
 - Uploads the files your `.dvc` files point to, from the cache to the remote[^1][].
@@ -792,7 +792,7 @@ Focus: push moves bytes between two machines, never touches the workspace.
   <div class="arrow-l on">checkout<span class="arrow">←</span></div>
   <div class="node" style="width:12rem"><ph-archive class="ic" /><b>Local cache</b><br><span class="mono">.dvc/cache</span></div>
   <div class="arrow-l on">fetch<span class="arrow">←</span></div>
-  <div class="node" style="width:12rem"><img class="logo" src="/minio-logo.png" alt="MinIO" /><b>Remote</b><br><span class="mono">MinIO: dvc-storage</span></div>
+  <div class="node" style="width:12rem"><ph-hard-drives class="ic" /><b>Remote</b><br><span class="mono">Silo: dvc-storage</span></div>
 </div>
 
 - Downloads the data your `.dvc` files point to, into the cache, then into the workspace.
@@ -816,7 +816,7 @@ Focus: pull is the only command that goes all the way from the remote to your di
   <div class="arrow-l on">dvc checkout<span class="arrow">←</span></div>
   <div class="node" style="width:12rem"><ph-archive class="ic" /><b>Local cache</b><br><span class="mono">.dvc/cache</span></div>
   <div class="arrow-l dim"><span class="arrow">↔</span></div>
-  <div class="node dim" style="width:12rem"><img class="logo" src="/minio-logo.png" alt="MinIO" /><b>Remote</b><br><span class="mono">MinIO: dvc-storage</span></div>
+  <div class="node dim" style="width:12rem"><ph-hard-drives class="ic" /><b>Remote</b><br><span class="mono">Silo: dvc-storage</span></div>
 </div>
 
 - Makes the workspace match the `.dvc` files, using **only** the local cache[^1][].
@@ -839,7 +839,7 @@ Focus: checkout is fast and offline, which is also its limit. The next slides sh
 | --- | --- | --- | --- |
 | `dvc init` | nothing | — | <span v-click="1">creates `.dvc/` in the Git repo: the config, and later the local cache</span> |
 | `dvc add` | your file | <span v-click="2">workspace</span> | <span v-click="3">local cache (and writes the pointer)</span> |
-| `dvc push` | the bytes | <span v-click="4">local cache</span> | <span v-click="5">remote (MinIO)</span> |
+| `dvc push` | the bytes | <span v-click="4">local cache</span> | <span v-click="5">remote (Silo)</span> |
 | `dvc pull` | the bytes | <span v-click="6">remote</span> | <span v-click="7">cache, then workspace</span> |
 | `dvc checkout` | the bytes | <span v-click="8">local cache</span> | <span v-click="9">workspace</span> |
 
@@ -856,13 +856,13 @@ Focus: fill it in together. The question is always "between which two places?"
 | Output | Store | Why |
 | --- | --- | --- |
 | Params, metrics, tags | <span v-click="1">Postgres</span> | <span v-click="3">small, structured, easy to query</span> |
-| The model file, plots | <span v-click="2">MinIO</span> | <span v-click="4">large files, fetched whole</span> |
+| The model file, plots | <span v-click="2">Silo</span> | <span v-click="4">large files, fetched whole</span> |
 
 <br>
 
 <v-click at="5">
 
-Today MinIO gets a second job: it also stores **the data**.
+Today Silo gets a second job: it also stores **the data**.
 
 </v-click>
 
@@ -873,7 +873,7 @@ Ask: "what goes here?" before each click.
 
 ---
 
-# MinIO now stores two kinds of things
+# Silo now stores two kinds of things
 
 ```mermaid
 flowchart LR
@@ -883,9 +883,9 @@ flowchart LR
 ```
 
 - MLflow **proxies** artifacts, so your pipeline needs no storage keys.
-- DVC talks to MinIO **directly**, so it needs keys of its own.
+- DVC talks to Silo **directly**, so it needs keys of its own.
 
-The lab's Makefile passes the MinIO keys from `.env` to DVC.
+The lab's Makefile passes the Silo keys from `.env` to DVC.
 
 Nothing secret goes into a committed file.
 
@@ -929,7 +929,7 @@ dvc-storage/dvcstore/files/md5/78/6c54f2770fa1e7ea5438e6e44b6486
 - Ten branches with the same dataset store **one** copy.
 - Damaged files can be found: hash the bytes again and compare.
 
-<ImageSlot id="w04-minio-md5" text="Screenshot: the MinIO console showing dvc-storage/dvcstore/files/md5/78/…" height="110px" />
+<ImageSlot id="w04-silo-md5" text="Screenshot: the Silo console showing dvc-storage/dvcstore/files/md5/78/…" height="110px" />
 
 <!--
 Focus: these follow from the design; nobody had to build them as features.
@@ -1474,7 +1474,7 @@ hide: true
 | Trap | What you see | What is wrong |
 | --- | --- | --- |
 | `dvc init` in a subfolder | "not tracked by any supported SCM tool" | Our labs live inside a bigger Git repo: use `--subdir` |
-| `dvc push` by hand | `NoCredentialsError` | DVC needs the MinIO keys; the Makefile passes them |
+| `dvc push` by hand | `NoCredentialsError` | DVC needs the Silo keys; the Makefile passes them |
 | `dvc checkout` | "Checkout failed" | That version is not in your cache: `dvc pull` |
 | `dvc repro` after no change | "didn't change, skipping" | Correct! Use `make link` to force one stage |
 | A file nobody changed | `dvc status`: modified | Windows line endings (CRLF): DVC 3 hashes raw bytes |
@@ -1517,7 +1517,7 @@ A teammate commits the new `.dvc` file and runs `git push`, but forgets `dvc pus
 <div class="flow">
   <div class="node no-shrink" style="width:13rem"><carbon-logo-git class="ic" style="color:#f05032" /><b>Git</b><br><small>the new pointer:<br>the hash of version 3</small></div>
   <div class="arrow-l fail">no file with this hash<span class="arrow">✗</span></div>
-  <div class="node no-shrink" style="width:13rem"><img class="logo" src="/minio-logo.png" alt="MinIO" /><b>Remote</b><br><small>versions 1 and 2 only</small></div>
+  <div class="node no-shrink" style="width:13rem"><ph-hard-drives class="ic" /><b>Remote</b><br><small>versions 1 and 2 only</small></div>
 </div>
 
 It works on their laptop, from their cache. On yours, `dvc pull` fails.
@@ -1550,7 +1550,7 @@ A remote key written there is shared with everyone who can read the repository, 
 [^1]: DVC docs, "remote modify". https://doc.dvc.org/command-reference/remote/modify
 
 <!--
-Focus: the same rule as Week 2's `.env`: settings in Git, secrets out of it. The lab's Makefile passes the MinIO keys as environment variables.
+Focus: the same rule as Week 2's `.env`: settings in Git, secrets out of it. The lab's Makefile passes the Silo keys as environment variables.
 Ask: how would you remove a key that is already in Git history? (You cannot, easily: rotate the key.)
 -->
 
@@ -1680,15 +1680,15 @@ If asked "do we still need dvc.yaml once Prefect arrives?": yes. `dvc repro` dec
 
 | # | Exercise | What you show |
 | --- | --- | --- |
-| 1 | Initialise DVC, point it at MinIO | the remote is configured, with no keys in Git |
-| 2 | Version 1: add, read the pointer, push | four lines in Git, the bytes in MinIO |
+| 1 | Initialise DVC, point it at Silo | the remote is configured, with no keys in Git |
+| 2 | Version 1: add, read the pointer, push | four lines in Git, the bytes in Silo |
 | 3 | The round trip | `checkout` fails with an empty cache; `pull` restores the data |
 | 4 | New batches and time travel | three versions, and you can go back to version 1 |
 | 5 | Declare the pipeline | `dvc repro` re-runs only what a change affects |
 | 6 | Link the run to the data | runs can be found by the data they used |
 | 7 | Catch data you have not added (optional) | a run cannot name data that is not on disk |
 
-The Compose stack is Week 3's, plus one more MinIO bucket.
+The Compose stack is Week 3's, plus one more Silo bucket.
 
 <!--
 Focus: stop the Week 3 stack before the lab; both use the same ports.

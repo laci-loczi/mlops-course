@@ -2,12 +2,12 @@
         dvc-pull dvc-status dvc-roundtrip dvc-timetravel repro dag metrics \
         link runs-for-data register promote trace all test test-fast
 
-# DVC reads the MinIO keys from AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, so
-# every dvc call gets them from the MinIO block in .env. No key goes into
+# DVC reads the Silo keys from AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, so
+# every dvc call gets them from the Silo block in .env. No key goes into
 # .dvc/config. DVC_PAGER=cat stops `dvc dag` from opening a pager.
 DOTENV = set -a && . ./.env && set +a
-DVC    = $(DOTENV) && AWS_ACCESS_KEY_ID="$$MINIO_ROOT_USER" \
-                      AWS_SECRET_ACCESS_KEY="$$MINIO_ROOT_PASSWORD" \
+DVC    = $(DOTENV) && AWS_ACCESS_KEY_ID="$$S3_ACCESS_KEY" \
+                      AWS_SECRET_ACCESS_KEY="$$S3_SECRET_KEY" \
                       DVC_PAGER=cat uv run dvc
 
 ## Bring up all four services and wait for healthchecks
@@ -34,14 +34,14 @@ ps:
 sync:
 	uv sync --all-groups
 
-## Exercise 1 — initialise DVC and point the remote at MinIO
+## Exercise 1 — initialise DVC and point the remote at Silo
 dvc-init:
 	$(DVC) init --subdir
 	$(DVC) config core.autostage true
 	$(DVC) config core.analytics false
 	$(DVC) config core.check_update false
 	$(DOTENV) && uv run dvc remote add -d $$DVC_REMOTE_NAME s3://$$DVC_BUCKET/$$DVC_REMOTE_PATH
-	$(DOTENV) && uv run dvc remote modify $$DVC_REMOTE_NAME endpointurl http://127.0.0.1:$$MINIO_API_PORT
+	$(DOTENV) && uv run dvc remote modify $$DVC_REMOTE_NAME endpointurl http://127.0.0.1:$$S3_API_PORT
 	@echo
 	@echo "--- .dvc/config (note: NO credentials in here) ---"
 	@cat .dvc/config
@@ -63,11 +63,11 @@ dvc-add:
 	@echo "--- data/.gitignore (DVC wrote this, in data/) ---"
 	@cat data/.gitignore
 
-## Exercises 2 and 4 — upload the bytes to MinIO
+## Exercises 2 and 4 — upload the bytes to Silo
 dvc-push:
 	$(DVC) push
 
-## Pull the bytes back from MinIO
+## Pull the bytes back from Silo
 dvc-pull:
 	$(DVC) pull
 
@@ -82,7 +82,7 @@ dvc-roundtrip:
 	rm -rf .dvc/cache
 	@echo "--- dvc checkout with an empty cache (expected to FAIL) ---"
 	-$(DVC) checkout data/measurements.csv
-	@echo "--- dvc pull (fetches from MinIO) ---"
+	@echo "--- dvc pull (fetches from Silo) ---"
 	$(DVC) pull data/measurements.csv
 	uv run python src/main.py verify-data
 

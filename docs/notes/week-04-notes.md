@@ -68,21 +68,21 @@ Several tools version data. They solve the same problem in different ways:
 - **Delta Lake**: tables with versions and "time travel" (`VERSION AS OF 12`).
 - **Dolt**: a SQL database with Git-style branches.
 
-DVC and Git LFS name data by its content. Delta Lake and S3 bucket versioning give each write a new version number or ID instead. The course uses DVC because it is open source, works next to Git, and stores data in any S3-compatible bucket, such as our MinIO. In November 2025 lakeFS took over the DVC project; DVC stays open source under the same licence (DVC blog, 18 Nov 2025).
+DVC and Git LFS name data by its content. Delta Lake and S3 bucket versioning give each write a new version number or ID instead. The course uses DVC because it is open source, works next to Git, and stores data in any S3-compatible bucket, such as our Silo. In November 2025 lakeFS took over the DVC project; DVC stays open source under the same licence (DVC blog, 18 Nov 2025).
 
 The practice (a fixed identity for every data version, recorded with the model) is what you take to your next team, whichever tool it uses.
 
 ### Installing DVC and `dvc init`
 
 ```bash
-uv add "dvc[s3]"                  # the [s3] extra adds S3 and MinIO support
+uv add "dvc[s3]"                  # the [s3] extra adds S3 and S3-compatible stores
 dvc init                          # run it inside a Git repository
 git commit -m "Initialise DVC"
 ```
 
 `dvc init` creates `.dvc/config` (settings, such as the remote), `.dvc/.gitignore` (keeps the cache out of Git) and `.dvcignore` (files DVC should not look at), and stages them with `git add`. The cache folder appears later, on the first `dvc add`. The lab is a subfolder of the course repository, so it uses `dvc init --subdir`.
 
-### DVC: pointers in Git, data in MinIO
+### DVC: pointers in Git, data in Silo
 
 DVC does not have its own history. Git does the versioning.
 
@@ -92,7 +92,7 @@ DVC does not have its own history. Git does the versioning.
 2. It writes a small **pointer file**, `data/measurements.csv.dvc`, with four fields: `md5`, `size`, `hash` and `path`.
 3. It adds the data file to `data/.gitignore`, so Git does not track it.
 
-You commit the pointer file to Git. `dvc push` uploads the data to a **remote**, here the `dvc-storage` bucket in MinIO.
+You commit the pointer file to Git. `dvc push` uploads the data to a **remote**, here the `dvc-storage` bucket in Silo.
 The object is stored at `files/md5/<first 2 characters>/<other 30 characters>`.
 
 Because the name is the hash, duplicates cost nothing: pushing the same data twice uploads nothing the second time.
@@ -101,7 +101,7 @@ Because the name is the hash, duplicates cost nothing: pushing the same data twi
 dvc add data/measurements.csv      # workspace -> cache, writes the pointer
 git add data/measurements.csv.dvc data/.gitignore
 git commit -m "dataset version 1"
-dvc push                           # cache -> remote (MinIO)
+dvc push                           # cache -> remote (Silo)
 ```
 
 ### `dvc push`: upload data
@@ -242,7 +242,7 @@ Lab: Exercise 7
 - **Content hash (md5)**: a short fingerprint computed from a file's bytes.
 - **Pointer file (`.dvc`)**: the small file in Git that names the data by its hash.
 - **DVC cache**: the local copy of tracked data, in `.dvc/cache`. Never committed.
-- **DVC remote**: shared storage for the bytes; here a MinIO bucket.
+- **DVC remote**: shared storage for the bytes; here a Silo bucket.
 - **Stage**: one step of a DVC pipeline, with `cmd`, `deps`, `params` and `outs`.
 - **`dvc.lock`**: the record of what a pipeline run actually used.
 - **Dataset digest (MLflow)**: MLflow's short hash of a table's values. Not a byte hash.
@@ -259,10 +259,10 @@ Lab: Exercise 7
 
 ## How this connects to the lab
 
-The lab uses the Week 3 Compose stack, plus a second MinIO bucket, `dvc-storage`. You:
+The lab uses the Week 3 Compose stack, plus a second Silo bucket, `dvc-storage`. You:
 
-1. set up DVC and point it at MinIO, with no keys in Git;
-2. receive the first batch, build dataset version 1 (461 rows), add it, read the pointer, push it, and find it in MinIO;
+1. set up DVC and point it at Silo, with no keys in Git;
+2. receive the first batch, build dataset version 1 (461 rows), add it, read the pointer, push it, and find it in Silo;
 3. delete the cache and see `dvc checkout` fail and `dvc pull` succeed;
 4. receive two more batches (versions 2 and 3, 568 and 768 rows) and go back to version 1;
 5. declare `train` and `evaluate` in `dvc.yaml`, and see which stages re-run after a change;
@@ -273,7 +273,7 @@ The lab uses the Week 3 Compose stack, plus a second MinIO bucket, `dvc-storage`
 ## Recommended reading
 
 - **Designing Machine Learning Systems (Huyen), Ch. 3–4.** *Focus on:* why "which data" is a hard question in practice.
-- **DVC documentation: Get Started, and the S3 remote guide** (https://doc.dvc.org/start). *Focus on:* the `.dvc` file, `add`/`push`/`pull`/`checkout`, and the `endpointurl` setting that points an "S3" remote at MinIO.
+- **DVC documentation: Get Started, and the S3 remote guide** (https://doc.dvc.org/start). *Focus on:* the `.dvc` file, `add`/`push`/`pull`/`checkout`, and the `endpointurl` setting that points an "S3" remote at Silo.
 - **Gebru et al., "Datasheets for Datasets"**, *Communications of the ACM* 64(12), 2021. *Focus on:* what to write down about a dataset besides its version.
 - **Roberts et al.**, *Nature Machine Intelligence* 3, 199–217 (2021). *Focus on:* the section on datasets and "Frankenstein datasets".
 - Optional: **MLflow documentation: Datasets.** *Focus on:* what `log_input` records.

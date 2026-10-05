@@ -63,7 +63,7 @@ def remote_object_key(md5: str) -> str:
 
 
 def remote_object_uri(settings, md5: str) -> str:
-    """The full s3:// URI of the tracked object in the MinIO remote."""
+    """The full s3:// URI of the tracked object in the Silo remote."""
     return (
         f"s3://{settings.dvc_bucket}/{settings.dvc_remote_path}/"
         f"{remote_object_key(md5)}"

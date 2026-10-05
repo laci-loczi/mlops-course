@@ -44,7 +44,7 @@ class Settings:
     model_owner: str = "unknown"
 
     # ── DVC remote (new in Week 4) ───────────────────────────────────────────
-    dvc_remote_name: str = "minio"
+    dvc_remote_name: str = "storage"
     dvc_bucket: str = "dvc-storage"
     dvc_remote_path: str = "dvcstore"
 
@@ -91,7 +91,7 @@ def load_settings(project_root: Path | None = None) -> Settings:
         ),
         model_alias=os.getenv("MLFLOW_MODEL_ALIAS", "staging"),
         model_owner=os.getenv("MLFLOW_MODEL_OWNER", "unknown"),
-        dvc_remote_name=os.getenv("DVC_REMOTE_NAME", "minio"),
+        dvc_remote_name=os.getenv("DVC_REMOTE_NAME", "storage"),
         dvc_bucket=os.getenv("DVC_BUCKET", "dvc-storage"),
         dvc_remote_path=os.getenv("DVC_REMOTE_PATH", "dvcstore"),
     )

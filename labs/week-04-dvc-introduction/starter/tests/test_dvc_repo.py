@@ -31,11 +31,11 @@ def test_dvc_local_state_is_git_ignored(dvc_repo) -> None:
         assert result.returncode == 0, f"{relative} is NOT git-ignored"
 
 
-def test_dvc_config_declares_default_minio_remote(dvc_repo, settings) -> None:
+def test_dvc_config_declares_default_storage_remote(dvc_repo, settings) -> None:
     parser = configparser.ConfigParser()
     parser.read(dvc_repo / ".dvc" / "config")
     assert parser["core"]["remote"] == settings.dvc_remote_name
-    # DVC writes the header as ['remote "minio"'], so the section name that
+    # DVC writes the header as ['remote "storage"'], so the section name that
     # configparser sees keeps the single quotes.
     section = f"'remote \"{settings.dvc_remote_name}\"'"
     assert parser[section]["url"] == (

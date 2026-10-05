@@ -10,7 +10,7 @@ def test_settings_defaults() -> None:
     assert defaults.test_size == 0.25
     assert defaults.mlflow_experiment_name == "diabetes-week4"
     assert defaults.dvc_bucket == "dvc-storage"
-    assert defaults.dvc_remote_name == "minio"
+    assert defaults.dvc_remote_name == "storage"
     assert defaults.dvc_remote_path == "dvcstore"
 
 
