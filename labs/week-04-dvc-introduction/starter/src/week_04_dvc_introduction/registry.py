@@ -46,6 +46,8 @@ def latest_version(settings: Settings) -> ModelVersion:
 
 def promote_to_staging(settings: Settings, version: str) -> ModelVersion:
     """Promote a version: record the evidence as tags, then move the aliases."""
+    
+    version = int(version)
     client = MlflowClient(settings.mlflow_tracking_uri)
     name = settings.registered_model_name
 

@@ -38,15 +38,15 @@ def next_batch(incoming_dir: Path, raw_dir: Path) -> Path | None:
 
 
 def build_measurements(raw_dir: Path, out_path: Path) -> int:
-    """Merge every batch in `raw_dir` into one CSV file at `out_path`.
-
-    TODO(student) — Exercise 2: load the batch files (`batch_paths` lists them in
-    order) and merge them into one frame. Write the frame to `out_path` with
-    `DataFrame.to_csv`, and look at its options. Return the frame's row count.
-    """
+    """Merge every batch in `raw_dir` into one CSV file at `out_path`."""
     paths = batch_paths(raw_dir)
-    _ = (pd, paths)  # keep the names meaningful until you implement the body
-    return 0  # placeholder — the CLI reports this as "not implemented yet"
+    
+    frames = [pd.read_csv(p) for p in paths]
+    merged_frame = pd.concat(frames, ignore_index=True)
+    
+    merged_frame.to_csv(out_path, index=False, lineterminator="\n")
+    
+    return len(merged_frame)
 
 
 def file_md5(path: Path) -> str:
