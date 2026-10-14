@@ -1,5 +1,4 @@
-# Pipeline hyperparameters. DVC records these values in dvc.lock (Exercise 5).
-# They moved here from .env because DVC can only track values that are in files.
+# Pipeline hyperparameters. DVC tracks values in files, so they live here, not in .env.
 
 random_seed: 42
 

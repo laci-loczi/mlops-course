@@ -1,13 +1,13 @@
 """The model registry: versions, aliases, governance tags, and traceability.
 
 New in Week 3. Tracking answers "which run scored best?". It cannot answer
-"what are we serving?" — for that you need a NAME, a stable address, an approval
+"what are we serving?" — for that you need a name, a stable address, an approval
 record, and a rollback target. That is the registry.
 
 Four nouns:
   registered model  a name, e.g. "diabetes-classifier"
   version           an immutable, numbered snapshot of one run's model
-  alias             a MUTABLE pointer to exactly one version: models:/<name>@staging
+  alias             a mutable pointer to exactly one version: models:/<name>@staging
   tag               a recorded fact attached to a version (who promoted it, on what)
 
 Note what is absent: model *stages*. MLflow deprecated the fixed
@@ -126,7 +126,7 @@ def roll_back(
 def load_aliased_model(settings: Settings):
     """Load the model the alias currently points at.
 
-    Two things worth noticing. First, the URI names a ROLE, not a version — the
+    Two things worth noticing. First, the URI names a role, not a version — the
     caller never changes when the champion changes. Second, this download goes
     through the tracking server's artifact proxy, so the client needs no Silo
     credentials at all. Check your `.env`: there are no AWS_* variables in it.

@@ -123,15 +123,15 @@ link:
 runs-for-data:
 	uv run python src/main.py runs-for-data
 
-## Register the winning model (Week 3 mechanics, unchanged)
+## Register the winning model (Week 3 mechanics)
 register:
 	uv run python src/main.py register
 
-## Promote it with an alias (Week 3 mechanics, unchanged)
+## Promote it with an alias (Week 3 mechanics)
 promote:
 	uv run python src/main.py promote
 
-## Exercise 6 — walk the chain: alias -> version -> run -> DATA VERSION -> bytes
+## Exercise 6 — walk the chain: alias -> version -> run -> data version -> bytes
 trace:
 	uv run python src/main.py trace
 
