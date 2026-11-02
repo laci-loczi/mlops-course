@@ -10,6 +10,7 @@ from mlflow.entities.model_registry import ModelVersion
 from mlflow.tracking import MlflowClient
 
 from .config import Settings
+from .pipeline import require_go
 
 
 def register_best_model(settings: Settings, run_id: str) -> ModelVersion:
@@ -18,11 +19,7 @@ def register_best_model(settings: Settings, run_id: str) -> ModelVersion:
     It refuses unless `reports/gate.json` records a GO. MLflow 3 prints a warning
     that the run has no artifacts at path 'model'; the version is still created.
     """
-    # TODO(student) Exercise 4: refuse to register a model that has no GO verdict.
-    # Replace the placeholder `verdict` below with the verdict returned by
-    # `require_go` in pipeline.py. The tags below use its "verdict" and
-    # "criteria_version" keys.
-    verdict = {"verdict": "not-checked", "criteria_version": "not-checked"}
+    verdict = require_go(settings)
 
     mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
     return mlflow.register_model(
@@ -58,10 +55,7 @@ def promote_to_staging(
     `staging` always moves. `champion` moves only when `champion=True`, because
     it sets the baseline that the regression check compares against.
     """
-    # TODO(student) Exercise 4: refuse here too, with the same `require_go`.
-    # Replace the placeholder `verdict` below with the verdict it returns.
-    verdict = {"verdict": "not-checked", "criteria_version": "not-checked",
-               "summary": {"skipped": "?"}}
+    verdict = require_go(settings)
 
     client = MlflowClient(settings.mlflow_tracking_uri)
     name = settings.registered_model_name
