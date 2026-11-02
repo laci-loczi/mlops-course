@@ -1,6 +1,6 @@
 CI run: [URL of the green CI run](https://github.com/laci-loczi/mlops-course/actions/runs/41450185842)
 
-CT run: <URL of the manual CT run>
+CT run: [URL of the manual CT run](https://github.com/laci-loczi/mlops-course/actions/runs/41451408682)
 
 Exercise 1:
 1. What is `autograde.yml` for? Which commands does it run, and in which folders?
