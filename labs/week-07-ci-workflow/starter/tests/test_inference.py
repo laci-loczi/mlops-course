@@ -7,8 +7,9 @@ import pytest
 from week_07_ci_workflow import inference
 from week_07_ci_workflow.data import FEATURE_COLUMNS
 
-# TODO(student) Exercise 3: mark this module's layer with `pytestmark`:
-# unit, data, eval or integration.
+# Could be unit (inference.py), but the assertions are about the serving
+# data contract: which payloads are legal and which are rejected.
+pytestmark = pytest.mark.data
 
 
 def test_the_example_payload_is_legal():

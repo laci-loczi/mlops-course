@@ -7,8 +7,9 @@ import yaml
 
 from week_07_ci_workflow.datasets import build_measurements, file_md5
 
-# TODO(student) Exercise 3: mark this module's layer with `pytestmark`:
-# unit, data, eval or integration.
+# Could be unit (it tests the builder code), but what it asserts is the
+# dataset itself: row counts, column order, bytes and the committed MD5.
+pytestmark = pytest.mark.data
 
 
 def test_raw_batches_present_and_shaped(raw_batches) -> None:

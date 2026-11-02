@@ -15,8 +15,9 @@ from week_07_ci_workflow import pipeline
 from week_07_ci_workflow.pipeline import ValidationFailed
 from week_07_ci_workflow.validation import read_report
 
-# TODO(student) Exercise 3: mark this module's layer with `pytestmark`:
-# unit, data, eval or integration.
+# Could be integration (it runs validate and prepare together), but
+# everything runs in tmp_path and what it checks is the data gate.
+pytestmark = pytest.mark.data
 
 
 @pytest.fixture

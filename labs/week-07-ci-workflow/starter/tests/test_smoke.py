@@ -9,8 +9,9 @@ from week_07_ci_workflow.model import (
     train_logistic_regression,
 )
 
-# TODO(student) Exercise 3: mark this module's layer with `pytestmark`:
-# unit, data, eval or integration.
+# Could be eval (it pins baseline metrics), but most tests check that
+# model.py loads, splits, builds and rejects correctly: our code, on fixed data.
+pytestmark = pytest.mark.unit
 
 
 def test_dataframe_loads(settings) -> None:
