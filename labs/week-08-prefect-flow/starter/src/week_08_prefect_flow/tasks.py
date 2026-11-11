@@ -23,7 +23,7 @@ import os
 import subprocess
 from pathlib import Path
 
-import yaml  # noqa: F401 -- you need it in Exercise 4
+import yaml
 from prefect import get_run_logger, task
 from prefect.tasks import exponential_backoff
 
@@ -103,14 +103,28 @@ def _run_dvc(settings: Settings, *args: str) -> str:
 # `retry_jitter_factor` here, then decide which tasks below get them.
 # `tests/test_flows.py` asserts your answer — and asserts that the local,
 # deterministic tasks did NOT get them.
+#
+# (a) `retries=3` on `run_pipeline` is unsuitable because `dvc repro` is local
+#     and deterministic, so a failing stage (or a NO-GO gate) fails identically
+#     every time, and the retries only delay the real error and bury it under
+#     repeated attempts while re-running expensive stages for nothing.
+# (b) `register_model` is not safe to repeat: it creates a new model version on
+#     every call, so a retry after a lost response would register a duplicate
+#     version of the same run; the existing "is this run id already registered?"
+#     check catches that sequential case, but it is check-then-act, so it does not
+#     protect against a retry (or a concurrent run) that searches before the
+#     first request has been committed, which only an idempotency key would close.
+#
+# Policy: 3 retries with exponentially growing delays (2s, 4s, 8s), each varied
+# by up to ±50% so tasks that failed together do not retry in lockstep.
 NETWORK_RETRIES = {
-    "retries": 0,
+    "retries": 3,
     # Doubling, so a service that is restarting gets a chance to finish.
-    # "retry_delay_seconds": exponential_backoff(backoff_factor=2),
+    "retry_delay_seconds": exponential_backoff(backoff_factor=2),
     # Jitter matters more than it looks. Without it, every task that failed at
     # the same moment retries at the same moment, and a service that fell over
     # because of load gets hit by the identical burst that felled it.
-    # "retry_jitter_factor": 0.5,
+    "retry_jitter_factor": 0.5,
 }
 
 
@@ -198,11 +212,18 @@ def read_params_used(settings: Settings, stage: str = "train") -> dict:
             params.yaml:
               train.C: 1.0
     """
-    # TODO(student) Exercise 4: read dvc.lock and return the parameters of
-    # `stage` as one dictionary of name -> value, for example
-    # {"train.C": 1.0, "train.family": "logreg"}. Read the file, not
-    # params.yaml: the record must say what the stage used.
-    return {}
+    lock_path = settings.project_root / "dvc.lock"
+    if not lock_path.exists():
+        _log().warning("no dvc.lock yet — no parameters recorded")
+        return {}
+
+    lock = yaml.safe_load(lock_path.read_text(encoding="utf-8")) or {}
+    params_by_file = lock.get("stages", {}).get(stage, {}).get("params", {})
+    # Usually only params.yaml, but a stage may read several params files.
+    used: dict = {}
+    for values in params_by_file.values():
+        used.update(values or {})
+    return used
 
 
 # ── Retries: the network edges, and nowhere else ────────────────────────────
